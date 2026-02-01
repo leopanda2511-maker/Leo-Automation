@@ -12,7 +12,7 @@ ENV/
 *.json
 !package.json
 !package-lock.json
-storage/
+/storage/
 *.log
 .DS_Store
 *.db
