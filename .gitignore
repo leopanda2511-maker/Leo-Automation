@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.env
+.env.local
+*.json
+!package.json
+!package-lock.json
+storage/
+*.log
+.DS_Store
+*.db
+*.sqlite
+
+# Render specific
+.render/

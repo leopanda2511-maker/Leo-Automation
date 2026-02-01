@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Scheduler - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Login Page */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .login-card h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+            text-align: center;
+        }
+        
+        .login-card p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* Dashboard Layout */
+        .dashboard {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+        
+        .dashboard.active {
+            display: flex;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .channel-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .channel-selector.empty {
+            color: #999;
+        }
+        
+        .channel-selector select {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border: none;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Left Navigation */
+        .nav-panel {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .nav-item.active {
+            background: #e7f3ff;
+            color: #667eea;
+            border-right: 3px solid #667eea;
+        }
+        
+        .nav-item-icon {
+            font-size: 1.2em;
+        }
+        
+        /* Middle Content Panel */
+        .content-panel {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #f5f7fa;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        /* Right Details Panel */
+        .details-panel {
+            width: 300px;
+            background: white;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .details-panel h3 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .details-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Channel Cards */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .channel-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .channel-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .channel-card.active {
+            border-color: #667eea;
+            background: #e7f3ff;
+        }
+        
+        .channel-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .channel-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Video List */
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .video-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .video-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.scheduled {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-badge.published {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Schedule Form */
+        .schedule-workspace {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #999;
+        }
+        
+        .step.active .step-number {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            border-color: #28a745;
+            background: #28a745;
+            color: white;
+        }
+        
+        .step-label {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .step.active .step-label {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .json-input-area {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .json-input-area:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .file-upload-zone {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-zone:hover,
+        .file-upload-zone.dragover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+        
+        .validation-errors {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            color: #721c24;
+        }
+        
+        .validation-errors h4 {
+            margin-bottom: 10px;
+        }
+        
+        .validation-errors ul {
+            margin-left: 20px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .confirmation-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .confirmation-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .confirmation-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .confirmation-item p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        /* Progress UI */
+        .progress-container {
+            margin-top: 30px;
+        }
+        
+        .overall-progress {
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .video-progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .video-progress-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .video-progress-item.processing {
+            border-color: #667eea;
+            background: #e7f3ff;
+        }
+        
+        .video-progress-item.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .video-progress-item.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .video-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .video-progress-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .video-progress-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .video-progress-item.processing .video-progress-status {
+            background: #667eea;
+            color: white;
+        }
+        
+        .video-progress-item.success .video-progress-status {
+            background: #28a745;
+            color: white;
+        }
+        
+        .video-progress-item.error .video-progress-status {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .video-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .video-progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+        }
+        
+        .video-progress-message {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+        
+        .refresh-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .refresh-btn.refreshing {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .video-source-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .video-source-badge.youtube {
+            background: #ff0000;
+            color: white;
+        }
+        
+        .video-source-badge.local {
+            background: #667eea;
+            color: white;
+        }
+        
+        .failure-reason {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+            padding: 8px;
+            background: #f8d7da;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <h1>🎬 YouTube Scheduler</h1>
+            <p>Automate your video uploads and scheduling</p>
+            <div id="loginMessage"></div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+            <button class="btn btn-secondary" onclick="handleSignup()">Sign Up</button>
+        </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-title">🎬 YouTube Scheduler</div>
+                <div id="channelSelector" class="channel-selector empty">
+                    <span>📺</span>
+                    <select id="channelSelect" onchange="switchChannel()">
+                        <option value="">No channel selected</option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-success btn-sm" onclick="connectYouTube()">+ Add Channel</button>
+                <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Navigation -->
+            <div class="nav-panel">
+                <div class="nav-item active" onclick="showSection('channels')">
+                    <span class="nav-item-icon">📺</span>
+                    <span>My YouTube Channels</span>
+                </div>
+                <div class="nav-item" onclick="showSection('scheduled')">
+                    <span class="nav-item-icon">📅</span>
+                    <span>Scheduled Videos</span>
+                </div>
+                <div class="nav-item" onclick="showSection('schedule')">
+                    <span class="nav-item-icon">➕</span>
+                    <span>Schedule New Videos</span>
+                </div>
+                <div class="nav-item" onclick="showSection('recent')">
+                    <span class="nav-item-icon">📹</span>
+                    <span>Recent Videos</span>
+                </div>
+                <div class="nav-item" onclick="showSection('failed')">
+                    <span class="nav-item-icon">❌</span>
+                    <span>Failed Videos</span>
+                </div>
+            </div>
+            
+            <!-- Middle Content Panel -->
+            <div class="content-panel">
+                <!-- My YouTube Channels Section -->
+                <div id="channelsSection" class="content-section active">
+                    <div class="section-header">
+                        <div>
+                            <h1 class="section-title">My YouTube Channels</h1>
+                            <p class="section-subtitle">Manage your connected YouTube channels</p>
+                        </div>
+                        <button class="refresh-btn" onclick="refreshChannels()" id="refreshChannelsBtn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    <div id="channelsList" class="channels-grid"></div>
+                </div>
+                
+                <!-- Scheduled Videos Section -->
+                <div id="scheduledSection" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1 class="section-title">Scheduled Videos</h1>
+                            <p class="section-subtitle">View all scheduled videos for the selected channel</p>
+                        </div>
+                        <button class="refresh-btn" onclick="refreshScheduledVideos()" id="refreshScheduledBtn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    <div id="scheduledVideosList" class="video-list"></div>
+                </div>
+                
+                <!-- Recent Videos Section -->
+                <div id="recentSection" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1 class="section-title">Recent Videos</h1>
+                            <p class="section-subtitle">Latest 20 videos (uploaded or scheduled) for the selected channel</p>
+                        </div>
+                        <button class="refresh-btn" onclick="refreshRecentVideos()" id="refreshRecentBtn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    <div id="recentVideosList" class="video-list"></div>
+                </div>
+                
+                <!-- Failed Videos Section -->
+                <div id="failedSection" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1 class="section-title">Failed Videos</h1>
+                            <p class="section-subtitle">Latest 20 failed uploads/schedules for the selected channel</p>
+                        </div>
+                        <button class="refresh-btn" onclick="refreshFailedVideos()" id="refreshFailedBtn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    <div id="failedVideosList" class="video-list"></div>
+                </div>
+                
+                <!-- Schedule New Videos Section -->
+                <div id="scheduleSection" class="content-section">
+                    <h1 class="section-title">Schedule New Videos</h1>
+                    <p class="section-subtitle">Upload or paste JSON to schedule multiple videos</p>
+                    <div class="schedule-workspace">
+                        <div class="step-indicator">
+                            <div class="step active" id="step1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Input JSON</div>
+                            </div>
+                            <div class="step" id="step2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Validate</div>
+                            </div>
+                            <div class="step" id="step3">
+                                <div class="step-number">3</div>
+                                <div class="step-label">Confirm</div>
+                            </div>
+                            <div class="step" id="step4">
+                                <div class="step-number">4</div>
+                                <div class="step-label">Process</div>
+                            </div>
+                        </div>
+                        
+                        <div id="step1Content" class="step-content active">
+                            <h3>Step 1: Input JSON Data</h3>
+                            <p style="color: #666; margin-bottom: 20px;">Upload a JSON file or paste JSON content below</p>
+                            <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('jsonFileInput').click()">
+                                <p>📁 Click to upload JSON file or drag and drop</p>
+                                <p style="font-size: 12px; color: #666; margin-top: 10px;">JSON file with video schedule data</p>
+                            </div>
+                            <input type="file" id="jsonFileInput" class="hidden" accept=".json">
+                            <p style="text-align: center; margin: 20px 0; color: #666;">OR</p>
+                            <textarea id="jsonTextarea" class="json-input-area" placeholder='{"videos": [{"title": "...", "description": "...", ...}]}'></textarea>
+                            <button class="btn btn-primary" style="margin-top: 20px;" onclick="validateJSON()">Validate & Continue</button>
+                        </div>
+                        
+                        <div id="step2Content" class="step-content">
+                            <h3>Step 2: Validation Results</h3>
+                            <div id="validationResults"></div>
+                            <div class="btn-group" style="margin-top: 20px; display: flex; gap: 10px;">
+                                <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
+                                <button class="btn btn-primary" id="continueToConfirmBtn" onclick="showConfirmation()" disabled>Continue to Confirm</button>
+                            </div>
+                        </div>
+                        
+                        <div id="step3Content" class="step-content">
+                            <h3>Step 3: Confirm Scheduling</h3>
+                            <div id="confirmationContent"></div>
+                            <div class="btn-group" style="margin-top: 20px; display: flex; gap: 10px;">
+                                <button class="btn btn-secondary" onclick="goToStep(2)">Back</button>
+                                <button class="btn btn-primary" onclick="startScheduling()">Confirm & Schedule</button>
+                            </div>
+                        </div>
+                        
+                        <div id="step4Content" class="step-content">
+                            <h3>Step 4: Processing Videos</h3>
+                            <div id="progressContainer" class="progress-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Details Panel -->
+            <div class="details-panel">
+                <h3>Information</h3>
+                <div id="detailsContent" class="details-content">
+                    <p>Select a section to view details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Confirm Video Scheduling</h2>
+                <button class="modal-close" onclick="closeConfirmationModal()">&times;</button>
+            </div>
+            <div id="modalConfirmationContent" class="confirmation-list"></div>
+            <div class="btn-group" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeConfirmationModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmAndSchedule()">Confirm & Schedule</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = null;
+        let selectedChannelId = null;
+        let selectedChannelName = null;
+        let channels = [];
+        let validatedVideos = [];
+        let currentStep = 1;
+        
+        // Initialize
+        if (authToken) {
+            checkAuth();
+        }
+        
+        // Handle OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('oauth_success')) {
+            setTimeout(() => {
+                loadChannels();
+            }, 500);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                    showDashboard();
+                } else {
+                    localStorage.removeItem('authToken');
+                    authToken = null;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+        
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            loadChannels();
+        }
+        
+        function showLogin() {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').classList.remove('active');
+        }
+        
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem('authToken', authToken);
+                    currentUser = data.user;
+                    showMessage(messageDiv, 'Login successful!', 'success');
+                    setTimeout(() => showDashboard(), 1000);
+                } else {
+                    showMessage(messageDiv, data.detail || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Network error', 'error');
+            }
+        }
+        
+        async function handleSignup() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem('authToken', authToken);
+                    currentUser = data.user;
+                    showMessage(messageDiv, 'Account created successfully!', 'success');
+                    setTimeout(() => showDashboard(), 1000);
+                } else {
+                    showMessage(messageDiv, data.detail || 'Signup failed', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Network error', 'error');
+            }
+        }
+        
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            currentUser = null;
+            selectedChannelId = null;
+            showLogin();
+        }
+        
+        function showMessage(div, message, type) {
+            div.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => { div.innerHTML = ''; }, 5000);
+        }
+        
+        function showSection(sectionName) {
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(`${sectionName}Section`).classList.add('active');
+            
+            // Load section data
+            if (sectionName === 'scheduled') {
+                loadScheduledVideos();
+            } else if (sectionName === 'channels') {
+                loadChannels();
+            }
+            
+            // Update details panel
+            updateDetailsPanel(sectionName);
+        }
+        
+        function updateDetailsPanel(sectionName) {
+            const detailsContent = document.getElementById('detailsContent');
+            if (sectionName === 'channels') {
+                detailsContent.innerHTML = `
+                    <p><strong>My YouTube Channels</strong></p>
+                    <p style="margin-top: 10px;">Connect and manage your YouTube channels. Click on a channel to select it as active.</p>
+                    <p style="margin-top: 10px;">The selected channel will be used for scheduling new videos.</p>
+                `;
+            } else if (sectionName === 'scheduled') {
+                detailsContent.innerHTML = `
+                    <p><strong>Scheduled Videos</strong></p>
+                    <p style="margin-top: 10px;">View all videos scheduled for the selected channel.</p>
+                    <p style="margin-top: 10px;">Videos are shown here until they are published.</p>
+                `;
+            } else if (sectionName === 'schedule') {
+                detailsContent.innerHTML = `
+                    <p><strong>Schedule New Videos</strong></p>
+                    <p style="margin-top: 10px;">Upload a JSON file or paste JSON content to schedule multiple videos at once.</p>
+                    <p style="margin-top: 10px;"><strong>Required fields:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>title</li>
+                        <li>description</li>
+                        <li>video_drive_url</li>
+                        <li>publish_datetime</li>
+                        <li>tags</li>
+                        <li>category_id</li>
+                        <li>made_for_kids</li>
+                    </ul>
+                `;
+            }
+        }
+        
+        async function loadChannels() {
+            try {
+                const response = await fetch(`${API_BASE}/youtube/channels`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                channels = data.channels;
+                
+                const channelsList = document.getElementById('channelsList');
+                const channelSelect = document.getElementById('channelSelect');
+                
+                channelsList.innerHTML = '';
+                channelSelect.innerHTML = '<option value="">No channel selected</option>';
+                
+                if (channels.length === 0) {
+                    channelsList.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No channels connected. Click "+ Add Channel" to connect your first YouTube channel.</p>';
+                } else {
+                    channels.forEach((channel, index) => {
+                        // Add to dropdown
+                        const option = document.createElement('option');
+                        option.value = channel.id;
+                        option.textContent = channel.title;
+                        if (index === 0 && !selectedChannelId) {
+                            option.selected = true;
+                            selectedChannelId = channel.id;
+                            selectedChannelName = channel.title;
+                        } else if (channel.id === selectedChannelId) {
+                            option.selected = true;
+                        }
+                        channelSelect.appendChild(option);
+                        
+                        // Add to grid
+                        const card = document.createElement('div');
+                        card.className = `channel-card ${channel.id === selectedChannelId ? 'active' : ''}`;
+                        card.onclick = () => switchChannelById(channel.id);
+                        card.innerHTML = `
+                            <h3>${channel.title}</h3>
+                            <p>Subscribers: ${channel.subscriber_count?.toLocaleString() || 'N/A'}</p>
+                            <p style="font-size: 12px; color: #999; margin-top: 5px;">Channel ID: ${channel.id}</p>
+                        `;
+                        channelsList.appendChild(card);
+                    });
+                }
+                
+                updateChannelSelector();
+            } catch (error) {
+                console.error('Failed to load channels:', error);
+            }
+        }
+        
+        function switchChannel() {
+            const select = document.getElementById('channelSelect');
+            const channelId = select.value;
+            if (channelId) {
+                switchChannelById(channelId);
+            }
+        }
+        
+        function switchChannelById(channelId) {
+            selectedChannelId = channelId;
+            const channel = channels.find(c => c.id === channelId);
+            selectedChannelName = channel ? channel.title : null;
+            updateChannelSelector();
+            loadChannels(); // Refresh to update active state
+            // Reload active section data
+            const activeSection = document.querySelector('.content-section.active');
+            if (activeSection) {
+                const sectionId = activeSection.id;
+                if (sectionId === 'scheduledSection') {
+                    loadScheduledVideos();
+                } else if (sectionId === 'recentSection') {
+                    loadRecentVideos();
+                } else if (sectionId === 'failedSection') {
+                    loadFailedVideos();
+                }
+            }
+        }
+        
+        function updateChannelSelector() {
+            const selector = document.getElementById('channelSelector');
+            const select = document.getElementById('channelSelect');
+            if (selectedChannelId && selectedChannelName) {
+                selector.classList.remove('empty');
+                select.value = selectedChannelId;
+            } else {
+                selector.classList.add('empty');
+            }
+        }
+        
+        async function connectYouTube() {
+            try {
+                const response = await fetch(`${API_BASE}/youtube/authorize`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                window.location.href = data.authorization_url;
+            } catch (error) {
+                alert('Failed to get authorization URL');
+            }
+        }
+        
+        async function loadScheduledVideos() {
+            if (!selectedChannelId) {
+                document.getElementById('scheduledVideosList').innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Please select a channel first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/videos/jobs?channel_id=${selectedChannelId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                const list = document.getElementById('scheduledVideosList');
+                list.innerHTML = '';
+                
+                if (data.jobs.length === 0) {
+                    list.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No scheduled videos. All videos are either published or not scheduled yet.</p>';
+                } else {
+                    data.jobs.forEach(job => {
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        const statusClass = job.status || 'pending';
+                        card.innerHTML = `
+                            <h4>${job.video_title}</h4>
+                            <p>${job.video_description || 'No description'}</p>
+                            <p><strong>Scheduled for:</strong> ${new Date(job.publish_datetime).toLocaleString()}</p>
+                            <span class="status-badge ${statusClass}">${statusClass.toUpperCase()}</span>
+                            ${job.video_id ? `<p style="font-size: 12px; color: #999; margin-top: 10px;">Video ID: ${job.video_id}</p>` : ''}
+                            ${job.error_message ? `<p style="color: #dc3545; margin-top: 10px;">Error: ${job.error_message}</p>` : ''}
+                        `;
+                        list.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load scheduled videos:', error);
+            }
+        }
+        
+        async function refreshScheduledVideos() {
+            const btn = document.getElementById('refreshScheduledBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>🔄</span> Refreshing...';
+            
+            try {
+                await loadScheduledVideos();
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🔄</span> Refresh';
+                }, 1000);
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄</span> Refresh';
+                alert('Failed to refresh: ' + error.message);
+            }
+        }
+        
+        async function refreshChannels() {
+            const btn = document.getElementById('refreshChannelsBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>🔄</span> Refreshing...';
+            
+            try {
+                await loadChannels();
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🔄</span> Refresh';
+                }, 1000);
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄</span> Refresh';
+                alert('Failed to refresh: ' + error.message);
+            }
+        }
+        
+        async function loadRecentVideos() {
+            if (!selectedChannelId) {
+                document.getElementById('recentVideosList').innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Please select a channel first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/videos/recent?channel_id=${selectedChannelId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                const list = document.getElementById('recentVideosList');
+                list.innerHTML = '';
+                
+                if (data.videos.length === 0) {
+                    list.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No recent videos found. Click "Refresh" to sync with YouTube.</p>';
+                } else {
+                    data.videos.forEach(video => {
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        const statusClass = video.status || 'unknown';
+                        const date = video.scheduled_at || video.published_at || video.date;
+                        const dateLabel = video.scheduled_at ? 'Scheduled' : 'Published';
+                        const sourceBadge = video.source === 'youtube' ? 'youtube' : 'local';
+                        
+                        card.innerHTML = `
+                            <h4>${video.title} <span class="video-source-badge ${sourceBadge}">${video.source || 'local'}</span></h4>
+                            <p>${video.description || 'No description'}</p>
+                            <p><strong>${dateLabel}:</strong> ${date ? new Date(date).toLocaleString() : 'N/A'}</p>
+                            <span class="status-badge ${statusClass}">${statusClass.toUpperCase()}</span>
+                            ${video.video_id ? `<p style="font-size: 12px; color: #999; margin-top: 10px;">Video ID: ${video.video_id}</p>` : ''}
+                        `;
+                        list.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load recent videos:', error);
+                document.getElementById('recentVideosList').innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">Failed to load recent videos: ' + error.message + '</p>';
+            }
+        }
+        
+        async function refreshRecentVideos() {
+            if (!selectedChannelId) {
+                alert('Please select a channel first');
+                return;
+            }
+            
+            const btn = document.getElementById('refreshRecentBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>🔄</span> Refreshing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/videos/recent/refresh?channel_id=${selectedChannelId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    await loadRecentVideos();
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span>🔄</span> Refresh';
+                    }, 1000);
+                } else {
+                    throw new Error(data.detail || 'Refresh failed');
+                }
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄</span> Refresh';
+                alert('Failed to refresh: ' + error.message);
+            }
+        }
+        
+        async function loadFailedVideos() {
+            if (!selectedChannelId) {
+                document.getElementById('failedVideosList').innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">Please select a channel first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/videos/failed?channel_id=${selectedChannelId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                const list = document.getElementById('failedVideosList');
+                list.innerHTML = '';
+                
+                if (data.videos.length === 0) {
+                    list.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No failed videos found. Click "Refresh" to update the list.</p>';
+                } else {
+                    data.videos.forEach(video => {
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.innerHTML = `
+                            <h4>${video.title}</h4>
+                            <p><strong>Attempted Schedule:</strong> ${video.attempted_schedule_time ? new Date(video.attempted_schedule_time).toLocaleString() : 'N/A'}</p>
+                            <p><strong>Failed At:</strong> ${video.failure_time ? new Date(video.failure_time).toLocaleString() : 'N/A'}</p>
+                            <div class="failure-reason">
+                                <strong>Failure Reason:</strong><br>
+                                ${video.failure_reason || 'Unknown error'}
+                            </div>
+                            ${video.video_id ? `<p style="font-size: 12px; color: #999; margin-top: 10px;">Video ID: ${video.video_id}</p>` : ''}
+                        `;
+                        list.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load failed videos:', error);
+                document.getElementById('failedVideosList').innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">Failed to load failed videos: ' + error.message + '</p>';
+            }
+        }
+        
+        async function refreshFailedVideos() {
+            if (!selectedChannelId) {
+                alert('Please select a channel first');
+                return;
+            }
+            
+            const btn = document.getElementById('refreshFailedBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>🔄</span> Refreshing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/videos/failed/refresh?channel_id=${selectedChannelId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    await loadFailedVideos();
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span>🔄</span> Refresh';
+                    }, 1000);
+                } else {
+                    throw new Error(data.detail || 'Refresh failed');
+                }
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄</span> Refresh';
+                alert('Failed to refresh: ' + error.message);
+            }
+        }
+        
+        // File upload handling
+        const fileUploadZone = document.getElementById('fileUploadZone');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+        
+        fileUploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadZone.classList.add('dragover');
+        });
+        
+        fileUploadZone.addEventListener('dragleave', () => {
+            fileUploadZone.classList.remove('dragover');
+        });
+        
+        fileUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                jsonFileInput.files = e.dataTransfer.files;
+                loadFileContent();
+            }
+        });
+        
+        jsonFileInput.addEventListener('change', loadFileContent);
+        
+        async function loadFileContent() {
+            const file = jsonFileInput.files[0];
+            if (file) {
+                const text = await file.text();
+                document.getElementById('jsonTextarea').value = text;
+                fileUploadZone.querySelector('p').textContent = `📁 ${file.name}`;
+            }
+        }
+        
+        // JSON Validation
+        function validateJSON() {
+            const jsonText = document.getElementById('jsonTextarea').value.trim();
+            if (!jsonText) {
+                alert('Please enter or upload JSON content');
+                return;
+            }
+            
+            let data;
+            try {
+                data = JSON.parse(jsonText);
+            } catch (e) {
+                showValidationResults(false, [`Invalid JSON format: ${e.message}`], []);
+                return;
+            }
+            
+            // Client-side validation
+            const errors = [];
+            const validVideos = [];
+            
+            if (!data.videos || !Array.isArray(data.videos)) {
+                errors.push('JSON must have a "videos" array');
+                showValidationResults(false, errors, []);
+                return;
+            }
+            
+            const now = new Date();
+            data.videos.forEach((video, index) => {
+                const videoErrors = [];
+                
+                if (!video.title || typeof video.title !== 'string') {
+                    videoErrors.push('Missing or invalid "title"');
+                }
+                if (!video.description || typeof video.description !== 'string') {
+                    videoErrors.push('Missing or invalid "description"');
+                }
+                if (!video.video_drive_url || typeof video.video_drive_url !== 'string') {
+                    videoErrors.push('Missing or invalid "video_drive_url"');
+                }
+                if (!video.publish_datetime || typeof video.publish_datetime !== 'string') {
+                    videoErrors.push('Missing or invalid "publish_datetime"');
+                } else {
+                    try {
+                        const publishDate = new Date(video.publish_datetime);
+                        if (isNaN(publishDate.getTime())) {
+                            videoErrors.push('Invalid "publish_datetime" format');
+                        } else if (publishDate <= now) {
+                            videoErrors.push('"publish_datetime" must be in the future');
+                        }
+                    } catch (e) {
+                        videoErrors.push('Invalid "publish_datetime" format');
+                    }
+                }
+                if (!Array.isArray(video.tags)) {
+                    videoErrors.push('Missing or invalid "tags" (must be array)');
+                }
+                if (!video.category_id || typeof video.category_id !== 'string') {
+                    videoErrors.push('Missing or invalid "category_id"');
+                }
+                if (typeof video.made_for_kids !== 'boolean') {
+                    videoErrors.push('Missing or invalid "made_for_kids" (must be boolean)');
+                }
+                
+                if (videoErrors.length === 0) {
+                    validVideos.push(video);
+                } else {
+                    errors.push(`Video ${index + 1} (${video.title || 'Untitled'}): ${videoErrors.join(', ')}`);
+                }
+            });
+            
+            validatedVideos = validVideos;
+            showValidationResults(validVideos.length > 0, errors, validVideos);
+        }
+        
+        function showValidationResults(hasValid, errors, validVideos) {
+            const resultsDiv = document.getElementById('validationResults');
+            let html = '';
+            
+            if (hasValid) {
+                html += `<div class="message success" style="margin-bottom: 20px;">
+                    <strong>✓ Validation Successful!</strong><br>
+                    Found ${validVideos.length} valid video(s) ready to schedule.
+                </div>`;
+            }
+            
+            if (errors.length > 0) {
+                html += `<div class="validation-errors">
+                    <h4>Validation Errors (${errors.length})</h4>
+                    <ul>
+                        ${errors.map(e => `<li>${e}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+            
+            if (validVideos.length > 0) {
+                html += `<div style="margin-top: 20px;">
+                    <h4>Valid Videos (${validVideos.length})</h4>
+                    <div style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
+                        ${validVideos.map((v, i) => `
+                            <div style="padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px;">
+                                <strong>${i + 1}. ${v.title}</strong><br>
+                                <span style="font-size: 12px; color: #666;">Scheduled: ${new Date(v.publish_datetime).toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+            
+            resultsDiv.innerHTML = html;
+            document.getElementById('continueToConfirmBtn').disabled = !hasValid;
+            goToStep(2);
+        }
+        
+        function showConfirmation() {
+            if (validatedVideos.length === 0) {
+                alert('No valid videos to confirm');
+                return;
+            }
+            
+            const content = document.getElementById('confirmationContent');
+            content.innerHTML = `
+                <p style="margin-bottom: 15px;"><strong>You are about to schedule ${validatedVideos.length} video(s):</strong></p>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${validatedVideos.map((v, i) => `
+                        <div class="confirmation-item">
+                            <h4>${i + 1}. ${v.title}</h4>
+                            <p><strong>Description:</strong> ${v.description.substring(0, 100)}${v.description.length > 100 ? '...' : ''}</p>
+                            <p><strong>Scheduled for:</strong> ${new Date(v.publish_datetime).toLocaleString()}</p>
+                            <p><strong>Tags:</strong> ${v.tags.join(', ')}</p>
+                            <p><strong>Category:</strong> ${v.category_id} | Made for Kids: ${v.made_for_kids ? 'Yes' : 'No'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            goToStep(3);
+        }
+        
+        function goToStep(step) {
+            currentStep = step;
+            
+            // Update step indicators
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                const contentEl = document.getElementById(`step${i}Content`);
+                
+                if (i < step) {
+                    stepEl.classList.remove('active');
+                    stepEl.classList.add('completed');
+                    contentEl.classList.remove('active');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                    stepEl.classList.remove('completed');
+                    contentEl.classList.add('active');
+                } else {
+                    stepEl.classList.remove('active', 'completed');
+                    contentEl.classList.remove('active');
+                }
+            }
+        }
+        
+        function startScheduling() {
+            if (!selectedChannelId) {
+                alert('Please select a channel first');
+                return;
+            }
+            
+            goToStep(4);
+            processVideos();
+        }
+        
+        async function processVideos() {
+            const progressContainer = document.getElementById('progressContainer');
+            const totalVideos = validatedVideos.length;
+            let completed = 0;
+            let failed = 0;
+            
+            // Create progress UI
+            progressContainer.innerHTML = `
+                <div class="overall-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="overallProgress" style="width: 0%">0%</div>
+                    </div>
+                    <div class="progress-stats">
+                        <span>Total: ${totalVideos}</span>
+                        <span>Completed: <span id="completedCount">0</span></span>
+                        <span>Failed: <span id="failedCount">0</span></span>
+                    </div>
+                </div>
+                <div class="video-progress-list" id="videoProgressList"></div>
+            `;
+            
+            const videoProgressList = document.getElementById('videoProgressList');
+            
+            // Create JSON file from validated videos
+            const jsonData = { videos: validatedVideos };
+            const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const jsonFile = new File([jsonBlob], 'videos.json', { type: 'application/json' });
+            
+            // Create FormData
+            const formData = new FormData();
+            formData.append('file', jsonFile);
+            
+            // Initialize video progress items
+            validatedVideos.forEach((video, index) => {
+                const item = document.createElement('div');
+                item.className = 'video-progress-item';
+                item.id = `videoProgress${index}`;
+                item.innerHTML = `
+                    <div class="video-progress-header">
+                        <span class="video-progress-title">${video.title}</span>
+                        <span class="video-progress-status">Pending</span>
+                    </div>
+                    <div class="video-progress-bar">
+                        <div class="video-progress-fill" id="videoProgressFill${index}" style="width: 0%"></div>
+                    </div>
+                    <div class="video-progress-message" id="videoProgressMsg${index}">Waiting to start...</div>
+                `;
+                videoProgressList.appendChild(item);
+            });
+            
+            // Upload to backend
+            try {
+                const response = await fetch(`${API_BASE}/videos/schedule?channel_id=${selectedChannelId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Update progress based on response
+                if (response.ok) {
+                    // Process success and failed videos
+                    data.success.forEach((item, index) => {
+                        const videoIndex = validatedVideos.findIndex(v => v.title === item.title);
+                        if (videoIndex >= 0) {
+                            const itemEl = document.getElementById(`videoProgress${videoIndex}`);
+                            itemEl.classList.add('success');
+                            itemEl.querySelector('.video-progress-status').textContent = 'Success';
+                            itemEl.querySelector(`#videoProgressFill${videoIndex}`).style.width = '100%';
+                            itemEl.querySelector(`#videoProgressMsg${videoIndex}`).textContent = `Scheduled for ${item.publish_datetime}`;
+                            completed++;
+                        }
+                    });
+                    
+                    data.failed.forEach((item) => {
+                        const videoIndex = validatedVideos.findIndex(v => v.title === item.title);
+                        if (videoIndex >= 0) {
+                            const itemEl = document.getElementById(`videoProgress${videoIndex}`);
+                            itemEl.classList.add('error');
+                            itemEl.querySelector('.video-progress-status').textContent = 'Failed';
+                            itemEl.querySelector(`#videoProgressFill${videoIndex}`).style.width = '100%';
+                            itemEl.querySelector(`#videoProgressMsg${videoIndex}`).textContent = `Error: ${item.error}`;
+                            failed++;
+                        }
+                    });
+                    
+                    // Update overall progress
+                    const totalProcessed = completed + failed;
+                    const overallPercent = (totalProcessed / totalVideos) * 100;
+                    document.getElementById('overallProgress').style.width = `${overallPercent}%`;
+                    document.getElementById('overallProgress').textContent = `${Math.round(overallPercent)}%`;
+                    document.getElementById('completedCount').textContent = completed;
+                    document.getElementById('failedCount').textContent = failed;
+                    
+                    // Show completion message
+                    setTimeout(() => {
+                        progressContainer.innerHTML += `
+                            <div class="message ${failed === 0 ? 'success' : 'error'}" style="margin-top: 20px;">
+                                <strong>Processing Complete!</strong><br>
+                                ${completed} video(s) scheduled successfully, ${failed} failed.
+                            </div>
+                        `;
+                    }, 1000);
+                } else {
+                    progressContainer.innerHTML += `
+                        <div class="message error" style="margin-top: 20px;">
+                            <strong>Error:</strong> ${data.detail || 'Scheduling failed'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                progressContainer.innerHTML += `
+                    <div class="message error" style="margin-top: 20px;">
+                        <strong>Network Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function confirmAndSchedule() {
+            closeConfirmationModal();
+            startScheduling();
+        }
+        
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').classList.remove('active');
+        }
+        
+        // Allow Enter key to submit in login form
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    </script>
+</body>
+</html>
